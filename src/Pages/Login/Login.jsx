@@ -10,11 +10,11 @@ function Login() {
 
   const login = async (e) => {
 
-    const res = await handleLogin(username, otp)
-    console.log(res)
+    const isValidUser = await handleLogin(username, otp)
 
-    if(res.status===200)
-    navigate('./quotes')
+    if(isValidUser)
+      navigate('./quotes')
+  
   };
 
   return (

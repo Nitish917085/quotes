@@ -1,68 +1,85 @@
-import axios from "axios"
+import axios from "axios";
 
-let token =""
+let token = "";
 
 const handleLogin = async (username, otp) => {
-    console.log("login")
-    try {
-        const authFrom = { username, otp }
-        const header = { headers: { 'Content-Type': 'application/json' } }
-        const response = await axios.post('https://assignment.stage.crafto.app/login', authFrom, header);
+  try {
+    const authFrom = { username, otp };
+    const header = { headers: { "Content-Type": "application/json" } };
+    const response = await axios.post(
+      "https://assignment.stage.crafto.app/login",
+      authFrom,
+      header
+    );
+    localStorage.setItem("token", response.data.token); // Save token in local storage
+    token = response.data.token;
+    return true;
+  } catch (error) {
+    if (error.status === 401) {
+      alert("enter valid credentials");
+      return false;
+    } else alert("something  went wrong");
 
-        localStorage.setItem('token', response.data.token); // Save token in local storage
-
-        token=response.data.token
-
-        console.log(response.data)
-        return response
-
-    } catch (error) {
-        console.error('Login failed', error);
-    }
+    return false;
+  }
 };
-const fetchQuotes = async (offset) => {
-    try {
-        const response = await axios.get(`https://assignment.stage.crafto.app/getQuotes?limit=80&offset=${offset}`, {
-            headers: {
-                'Authorization': token,
-            },
-        });
 
-        console.log("data",response.data)
-        return response.data.data
-    } catch (error) {
-        console.error('Failed to fetch quotes', error);
-    }
+const fetchQuotes = async (offset) => {
+  try {
+    const response = await axios.get(
+      `https://assignment.stage.crafto.app/getQuotes?limit=80&offset=${offset}`,
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    return response.data.data;
+  } catch (error) {
+    if (error.status === 401) alert("Enter valid token, re-login");
+    else alert("something  went wrong");
+
+    return false;
+  }
 };
 
 const handleUpload = async (formData) => {
-    try {
-      
-        const response = await axios.post('https://crafto.app/crafto/v1.0/media/assignment/upload', formData);
-        console.log("h",response)
-        return response.data[0].url;
-    } catch (error) {
-        console.error('File upload failed', error);
-        throw error;
-    }
+  try {
+    const response = await axios.post(
+      "https://crafto.app/crafto/v1.0/media/assignment/upload",
+      formData
+    );
+    return response.data[0].url;
+  } catch (error) {
+    alert("Unable to upload, try again");
+    throw error;
+  }
 };
 
-const handleCreateQuote = async (text,mediaUrl) => {
-    try {
-        await axios.post('https://assignment.stage.crafto.app/postQuote', {
-            text,
-            mediaUrl,
-        }, {
-            headers: {
-                'Authorization': token,
-                'Content-Type': 'application/json',
-            },
-        });
-    } catch (error) {
-        console.error('Failed to create quote', error);
-        // Handle error
-    }
+const handleCreateQuote = async (text, mediaUrl) => {
+  try {
+    const response = await axios.post(
+      "https://assignment.stage.crafto.app/postQuote",
+      {
+        text,
+        mediaUrl,
+      },
+      {
+        headers: {
+          Authorization: token,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    alert("Quote Successfully created");
+
+    return true;
+  } catch (error) {
+    alert("Failed to create quote, re-login");
+    return false;
+  }
 };
 
-
-export { handleLogin, handleCreateQuote, handleUpload, fetchQuotes }
+export { handleLogin, handleCreateQuote, handleUpload, fetchQuotes };

@@ -2,37 +2,37 @@ import React, { useEffect, useRef, useState } from "react";
 import "./createQuote.css";
 import { useNavigate } from "react-router-dom";
 import { handleCreateQuote, handleUpload } from "../../services/api";
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
-import EditIcon from '@mui/icons-material/Edit';
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import EditIcon from "@mui/icons-material/Edit";
 import NavBar from "../../Components/NavBar/navBar";
 
 const CreateQuote = () => {
   const navigate = useNavigate();
-  const fileInputRef = useRef(null); 
-  const [text, setText] = useState('');
+  const fileInputRef = useRef(null);
+  const [text, setText] = useState("");
   const [file, setFile] = useState(null);
-  const [filePreview, setFilePreview] = useState(null); 
-  const [isTextTouched, setIsTextTouched] = useState(false); 
-  const [isFileTouched, setIsFileTouched] = useState(false); 
- 
-  const title ="Create Quote"
+  const [filePreview, setFilePreview] = useState(null);
+  const [isTextTouched, setIsTextTouched] = useState(false);
+  const [isFileTouched, setIsFileTouched] = useState(false);
+
+  const title = "Create Quote";
 
   const handleFileChange = (e) => {
     setIsFileTouched(true);
     const selectedFile = e.target.files[0];
     setFile(selectedFile);
-    setFilePreview(URL.createObjectURL(selectedFile)); 
+    setFilePreview(URL.createObjectURL(selectedFile));
   };
 
   const triggerFileInput = () => {
-    setIsFileTouched(true); 
+    setIsFileTouched(true);
     fileInputRef.current.click();
   };
 
   const upload = async () => {
-    if (!file) return null; 
+    if (!file) return null;
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
     const res = await handleUpload(formData);
     return res;
   };
@@ -48,8 +48,10 @@ const CreateQuote = () => {
     const mediaUrl = await upload();
     console.log("Uploaded media URL:", mediaUrl);
 
-    const uploadquote = await handleCreateQuote(text, mediaUrl);
-    navigate('/quotes');
+    const isQuoteUploaded = await handleCreateQuote(text, mediaUrl);
+
+    if (isQuoteUploaded) return navigate("/quotes");
+    else return navigate("/");
   };
 
   useEffect(() => {
@@ -82,14 +84,17 @@ const CreateQuote = () => {
             <input
               type="file"
               ref={fileInputRef}
-              style={{ display: 'none' }}
+              style={{ display: "none" }}
               onChange={handleFileChange}
               required
             />
 
             <div className="img-upload">
               {!filePreview ? (
-                <button className="upload-image-button" onClick={triggerFileInput}>
+                <button
+                  className="upload-image-button"
+                  onClick={triggerFileInput}
+                >
                   <AddPhotoAlternateIcon className="add-photo-icon" />
                 </button>
               ) : (
@@ -102,7 +107,9 @@ const CreateQuote = () => {
             {isFileTouched && !file && (
               <p className="error-message">Image is required.</p>
             )}
-            <button className="sumbit-func" onClick={createQuote}>Submit Quote</button>
+            <button className="sumbit-func" onClick={createQuote}>
+              Submit Quote
+            </button>
           </div>
         </div>
       </div>
