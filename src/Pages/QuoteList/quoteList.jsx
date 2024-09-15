@@ -19,6 +19,7 @@ const QuoteList = () => {
   const quoteListRef = useRef(null);
   const [previewImage, setPreviewImage] = useState("");
   const [imageStyle, setImageStyle] = useState({});
+  const [cols, setCols] = useState(3); // Default for desktop view
 
   const title = "Quotes";
 
@@ -78,14 +79,16 @@ const QuoteList = () => {
     const width = window.innerWidth;
     const height = window.innerHeight;
 
+    if (width < 600) setCols(1);
+    else if (width < 900) setCols(2);
+    else setCols(3);
+
     if (width < height) {
-      // If the width is smaller, set width to 100% and height to auto
       setImageStyle({
         width: "100%",
         height: "auto",
       });
     } else {
-      // If the height is smaller, set height to 100% and width to auto
       setImageStyle({
         width: "auto",
         height: "100%",
@@ -130,7 +133,7 @@ const QuoteList = () => {
                   overflowY: "scroll",
                 }}
               >
-                <ImageList variant="masonry" cols={3} gap={8}>
+                <ImageList variant="masonry" cols={cols} gap={8}>
                   {quotes.map((item, index) => (
                     <ImageListItem
                       className="img-container"
