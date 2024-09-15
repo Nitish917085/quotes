@@ -26,8 +26,10 @@ const handleLogin = async (username, otp) => {
 
 const fetchQuotes = async (offset) => {
   try {
+
+    token = localStorage.getItem('token')
     const response = await axios.get(
-      `https://assignment.stage.crafto.app/getQuotes?limit=80&offset=${offset}`,
+      `https://assignment.stage.crafto.app/getQuotes?limit=20&offset=${offset}`,
       {
         headers: {
           Authorization: token,
@@ -45,6 +47,9 @@ const fetchQuotes = async (offset) => {
 };
 
 const handleUpload = async (formData) => {
+
+      token = localStorage.getItem("token");
+
   try {
     const response = await axios.post(
       "https://crafto.app/crafto/v1.0/media/assignment/upload",
@@ -58,6 +63,8 @@ const handleUpload = async (formData) => {
 };
 
 const handleCreateQuote = async (text, mediaUrl) => {
+      token = localStorage.getItem("token");
+
   try {
     const response = await axios.post(
       "https://assignment.stage.crafto.app/postQuote",
