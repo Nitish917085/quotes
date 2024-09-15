@@ -15,7 +15,10 @@ const QuoteList = () => {
   const [hasMore, setHasMore] = useState(true);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [isPreviewModal, setIsPreviewModal] = useState(false);
   const quoteListRef = useRef(null);
+  const [previewImage, setPreviewImage] = useState("");
+  const [imageStyle, setImageStyle] = useState({});
 
   const title = "Quotes";
 
@@ -30,19 +33,17 @@ const QuoteList = () => {
       return;
     }
 
-    // Check if no more quotes are fetched
     if (fetchedQuotes?.length === 0) {
       setHasMore(false);
     } else {
       setQuotes((prev) => {
-        // Create a Set to ensure no duplicates
         const newQuotes = [...prev, ...fetchedQuotes];
         const uniqueQuotes = Array.from(
           new Set(newQuotes.map((q) => q.id))
         ).map((id) => newQuotes.find((q) => q.id === id));
         return uniqueQuotes;
       });
-      setOffset((prev) => prev + fetchedQuotes.length); // Adjust the offset by the length of the fetched quotes
+      setOffset((prev) => prev + fetchedQuotes.length);
     }
 
     setLoading(false);
@@ -67,21 +68,59 @@ const QuoteList = () => {
     [loading, hasMore]
   );
 
+  const previewModalDetails = (info) => {
+    console.log("details", info);
+    setPreviewImage(info.mediaUrl);
+    setIsPreviewModal(true);
+  };
+
+  const handleResize = () => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    if (width < height) {
+      // If the width is smaller, set width to 100% and height to auto
+      setImageStyle({
+        width: "100%",
+        height: "auto",
+      });
+    } else {
+      // If the height is smaller, set height to 100% and width to auto
+      setImageStyle({
+        width: "auto",
+        height: "100%",
+      });
+    }
+  };
+
   useEffect(() => {
     fetch();
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
     <>
       <div className="quote-body">
+        {isPreviewModal && (
+          <div className="previewImageModal">
+            <div className="close" onClick={() => setIsPreviewModal(false)}>
+              X
+            </div>
+            <div className="modal-image-preview">
+              <img style={imageStyle} src={`${previewImage}`} />
+            </div>
+          </div>
+        )}
         <NavBar title={title} />
         <div className="quote-container">
           <AddIcon className="float-button" onClick={createQuote} />
 
-          <div
-            className="quote-list"
-            ref={quoteListRef} // Attach the ref to the scrollable container
-          >
+          <div className="quote-list" ref={quoteListRef}>
             {quotes.length && (
               <Box
                 sx={{
@@ -93,7 +132,11 @@ const QuoteList = () => {
               >
                 <ImageList variant="masonry" cols={3} gap={8}>
                   {quotes.map((item, index) => (
-                    <ImageListItem className="img-container" key={index}>
+                    <ImageListItem
+                      className="img-container"
+                      key={index}
+                      onClick={() => previewModalDetails(item)}
+                    >
                       {item.mediaUrl ? (
                         <img
                           srcSet={`${item.mediaUrl}?w=248&fit=crop&auto=format&dpr=2 2x`}
@@ -101,11 +144,6 @@ const QuoteList = () => {
                           alt={item.text}
                           loading="lazy"
                           style={{ objectFit: "cover" }}
-                          // onError={(e) => {
-                          //   e.target.onerror = null;
-                          //   e.target.src =
-                          //     "https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg"; // Provide a fallback image
-                          // }}
                         />
                       ) : (
                         <img
